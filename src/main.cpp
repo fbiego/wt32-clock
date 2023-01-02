@@ -260,6 +260,10 @@ public:
 // Create an instance of the prepared class.
 LGFX tft;
 
+ESP32Time rtc;
+
+#include "ble.h"
+
 static lv_disp_draw_buf_t draw_buf;
 static lv_disp_drv_t disp_drv;
 
@@ -360,10 +364,33 @@ void setup()
 
     Serial.println("Setup done");
   }
+
+  initBLE();
 }
 
 void loop()
 {
   lv_timer_handler(); /* let the GUI do its work */
   delay(5);
+
+  if (hr24){
+    lv_label_set_text(ui_timeLabel, rtc.getTime("%R").c_str());
+  } else {
+    lv_label_set_text(ui_timeLabel, rtc.getTime("%I:%M").c_str());
+  }
+  
+  lv_label_set_text(ui_dateLabel, rtc.getTime("%A\n%B %d").c_str());
+
+  lv_arc_set_value(ui_hourArc, rtc.getHour());
+  lv_arc_set_value(ui_minuteArc, rtc.getMinute());
+
+  if (notify){
+    notify = false;
+    lv_label_set_text(ui_notificationTitle, "Notification");
+    lv_label_set_text(ui_notificationText, msg);
+
+    showNotification_Animation(ui_notificationPanel, 0);
+
+  }
+
 }
